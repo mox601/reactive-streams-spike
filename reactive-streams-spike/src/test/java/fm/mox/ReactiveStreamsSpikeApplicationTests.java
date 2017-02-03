@@ -308,4 +308,5 @@ block() will block the current thread, you should be aware which threadpool you 
     private Mono<Void> fluxToSaveBlockingRepository(Flux<Users.User> flux, BlockingRepository<Users.User> blockingRepository) {
         return flux.publishOn(Schedulers.parallel()).doOnNext(blockingRepository::save).then();
     }
+
 }
