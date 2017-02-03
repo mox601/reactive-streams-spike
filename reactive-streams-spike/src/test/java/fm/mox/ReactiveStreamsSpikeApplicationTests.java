@@ -1,7 +1,5 @@
 package fm.mox;
 
-import static org.junit.Assert.assertTrue;
-
 import java.time.Duration;
 
 import org.junit.Test;
@@ -14,19 +12,17 @@ import reactor.test.StepVerifier;
 @Slf4j
 public class ReactiveStreamsSpikeApplicationTests {
 
-	@Test
-	public void contextLoads() {
-		log.info("ddd");
-		assertTrue(true);
-		Mono.never();
-	}
-
 	/*
 	* imperative/blocking spring repository api
 async/non blocking show spring 5 repository
 items may be available in the same thread
 you show what should be done
 	* */
+
+	@Test
+	public void nothing() throws Exception {
+		Flux<Integer> just = Flux.just(1, 2, 3);
+	}
 
 	@Test
 	public void empty() throws Exception {
@@ -46,7 +42,7 @@ you show what should be done
 	public void twoValues() throws Exception {
 		Flux<String> flux = twoVals();
 
-		StepVerifier.create(flux) //can control bounded demand. 1 blocks
+		StepVerifier.create(flux) //can control bounded demand. requesting 1 would block
 			.expectNext("1", "2")
 			.expectComplete()
 			.verify();
@@ -55,6 +51,7 @@ you show what should be done
 
 	private Flux<String> twoVals() {
 //		return Flux.fromIterable(Arrays.asList("1", "3"));
+// 		.log()
 		return Flux.just("1", "2");
 	}
 
@@ -105,7 +102,7 @@ you show what should be done
 		return Mono.never();
 	}
 
-	///////////////////// verifier
+	///////////////////// write the verifier instead
 
 	@Test
 	public void expectElementsThenComplete() throws Exception {
