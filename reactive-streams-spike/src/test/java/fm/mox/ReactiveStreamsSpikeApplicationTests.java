@@ -82,8 +82,9 @@ public class ReactiveStreamsSpikeApplicationTests {
             .verify();
     }
 
+    //mono and error
     private Flux<String> publishOneThenError() {
-        return Flux.concat(Mono.just("foo"), Flux.error(new IllegalStateException()));
+        return null;
     }
 
     @Test
