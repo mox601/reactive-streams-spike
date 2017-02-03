@@ -237,12 +237,7 @@ public class ReactiveStreamsSpikeApplicationTests {
     }
 
     /*
-    * show unit tests:
-
-write the stepverifier instead
-
-
-control the demand in create(..., 1)
+    *
 
 how to debug
 
@@ -265,20 +260,6 @@ adapt flux to/from rxjava
 
 block() will block the current thread, you should be aware which threadpool you are. use in tests
 
-how to integrate in reactive pipeline a jdbc operation?
-run on an elastic io scheduler
-subscribeOn(elastic())
-
-flux.defer().subscribeOn(elastic())
-run the query on subscription
-
-save is publishOn()
-run onNext on parallel , ... then()
-
-threading examples
-http://www.grahamlea.com/2014/07/rxjava-threading-examples/
-http://stackoverflow.com/questions/30791902/rxjava-subscribeonschedulers-newthread-questions#30801055
-http://stackoverflow.com/questions/31276164/rxjava-schedulers-use-cases
 	* */
 
 
