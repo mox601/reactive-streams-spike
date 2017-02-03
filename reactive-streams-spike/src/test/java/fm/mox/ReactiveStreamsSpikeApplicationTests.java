@@ -14,7 +14,6 @@ import org.junit.Test;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 
 @Slf4j
@@ -36,7 +35,7 @@ public class ReactiveStreamsSpikeApplicationTests {
     }
 
     private Flux<String> emptyFlux() {
-        return Flux.empty();
+        return null;
     }
 
     @Test
@@ -53,7 +52,8 @@ public class ReactiveStreamsSpikeApplicationTests {
     private Flux<String> twoVals() {
 //		return Flux.fromIterable(Arrays.asList("1", "3"));
 // 		.log()
-        return Flux.just("1", "2");
+//        return Flux.just("1", "2");
+        return null;
     }
 
     @Test
@@ -68,7 +68,7 @@ public class ReactiveStreamsSpikeApplicationTests {
     //throwing won't work in an async context. exception might bubble up in different threads
     private Flux<String> errorFlux() {
 //		throw new IllegalStateException(); // can't do this
-        return Flux.error(new IllegalStateException());
+        return null;
     }
     //publishers flux and mono are try-catch-block all included
 
@@ -82,8 +82,9 @@ public class ReactiveStreamsSpikeApplicationTests {
             .verify();
     }
 
+    //interval duration take 3
     private Flux<Long> counter() {
-        return Flux.interval(Duration.ofMillis(100L)).take(3); // infinite stream. fails. should take just 3
+        return null;
     }
 
     @Test
@@ -92,11 +93,9 @@ public class ReactiveStreamsSpikeApplicationTests {
         expectOneHourOfElements(() -> Flux.interval(Duration.ofSeconds(1)).take(3600));
     }
 
+    //virtual time then await
     private void expectOneHourOfElements(Supplier<Flux<Long>> supplier) {
-        StepVerifier.withVirtualTime(supplier)
-            .thenAwait(Duration.ofHours(1))
-            .expectNextCount(3600)
-            .expectComplete();
+        //
     }
 
     @Test
@@ -113,23 +112,19 @@ public class ReactiveStreamsSpikeApplicationTests {
     }
 
     private Mono<String> noSignalMono() {
-        return Mono.never();
+        return null;
     }
 
-    ///////////////////// write the verifier instead
-
+    // write the verifier instead
     @Test
     public void expectElementsThenComplete() throws Exception {
         expectFooBarComplete(Flux.just("foo", "bar"));
     }
 
-//    any type of assertions lib
+    //    any type of assertions lib
     private void expectFooBarComplete(Flux<String> flux) {
 //		fail();
-        StepVerifier.create(flux)
-            .expectNext("foo", "bar")
-            .expectComplete()
-            .verify();
+
     }
 
     @Test
@@ -141,7 +136,7 @@ public class ReactiveStreamsSpikeApplicationTests {
     }
 
     private StepVerifier requestAllExpectTwo(Flux<Users.User> flux) {
-        return StepVerifier.create(flux).expectNextCount(2).expectComplete();
+        return null;
     }
 
     @Test
@@ -152,12 +147,9 @@ public class ReactiveStreamsSpikeApplicationTests {
         verifier.verify();
     }
 
+    //next request next cancel
     private StepVerifier requestOneByOne(Flux<Users.User> flux) {
-        return StepVerifier.create(flux, 1)
-            .expectNext(Users.BOB)
-            .thenRequest(1)
-            .expectNext(Users.ALICE)
-            .thenCancel();
+        return null;
     }
 
     @Test
@@ -178,7 +170,7 @@ public class ReactiveStreamsSpikeApplicationTests {
     //    to go async we use flatMap and return
     //e.g. remote service with latency
     private Flux<Users.User> asyncCapitalizeMany(Flux<Users.User> all) {
-        return all.flatMap(this::asyncCapitalizeUser);
+        return null;
     }
 
     private Mono<Users.User> asyncCapitalizeUser(Users.User user) {
@@ -201,7 +193,7 @@ public class ReactiveStreamsSpikeApplicationTests {
 
     //merge
     private Flux<Users.User> mergeFluxWithInterleave(Flux<Users.User> one, Flux<Users.User> two) {
-        return Flux.merge(one, two);
+        return null;
     }
 
     @Test
@@ -219,7 +211,7 @@ public class ReactiveStreamsSpikeApplicationTests {
 
     //concat
     private Flux<Users.User> mergeFluxWithNoInterleave(Flux<Users.User> one, Flux<Users.User> two) {
-        return Flux.concat(one, two);
+        return null;
     }
 
     @Test
@@ -237,12 +229,6 @@ public class ReactiveStreamsSpikeApplicationTests {
     }
 
     /*
-    * show unit tests:
-
-write the stepverifier instead
-
-
-control the demand in create(..., 1)
 
 how to debug
 
@@ -261,24 +247,7 @@ firstemitting
 
 no null in streams
 
-adapt flux to/from rxjava
-
 block() will block the current thread, you should be aware which threadpool you are. use in tests
-
-how to integrate in reactive pipeline a jdbc operation?
-run on an elastic io scheduler
-subscribeOn(elastic())
-
-flux.defer().subscribeOn(elastic())
-run the query on subscription
-
-save is publishOn()
-run onNext on parallel , ... then()
-
-threading examples
-http://www.grahamlea.com/2014/07/rxjava-threading-examples/
-http://stackoverflow.com/questions/30791902/rxjava-subscribeonschedulers-newthread-questions#30801055
-http://stackoverflow.com/questions/31276164/rxjava-schedulers-use-cases
 	* */
 
 
@@ -302,7 +271,7 @@ http://stackoverflow.com/questions/31276164/rxjava-schedulers-use-cases
     private Flux<Users.User> blockingRepositoryToFlux(BlockingUserRepository blockingUserRepository) {
 //        return Flux.fromIterable(blockingUserRepository.findAll()).subscribeOn(Schedulers.elastic());
         //defer
-        return Flux.defer(() -> Flux.fromIterable(blockingUserRepository.findAll()).subscribeOn(Schedulers.elastic()));
+        return null;
     }
 
     @Test
@@ -323,8 +292,8 @@ http://stackoverflow.com/questions/31276164/rxjava-schedulers-use-cases
 
     }
 
-    //publishOn run onNext on parallel
+    //publishOn run onNext on parallel, doOnNext save
     private Mono<Void> fluxToSaveBlockingRepository(Flux<Users.User> flux, BlockingRepository<Users.User> blockingRepository) {
-        return flux.publishOn(Schedulers.parallel()).doOnNext(blockingRepository::save).then();
+        return null;
     }
 }
