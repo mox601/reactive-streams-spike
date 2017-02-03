@@ -133,6 +133,34 @@ public class ReactiveStreamsSpikeApplicationTests {
     }
 
     @Test
+    public void askAllExpectTwo() throws Exception {
+        ReactiveUserRepository reactiveUserRepository = new ReactiveUserRepository(Arrays.asList(Users.BOB, Users.ALICE));
+        Flux<Users.User> flux = reactiveUserRepository.findAll();
+        StepVerifier verifier = requestAllExpectTwo(flux);
+        verifier.verify();
+    }
+
+    private StepVerifier requestAllExpectTwo(Flux<Users.User> flux) {
+        return StepVerifier.create(flux).expectNextCount(2).expectComplete();
+    }
+
+    @Test
+    public void askOneByOne() throws Exception {
+        ReactiveUserRepository reactiveUserRepository = new ReactiveUserRepository(Arrays.asList(Users.BOB, Users.ALICE, Users.CARL));
+        Flux<Users.User> flux = reactiveUserRepository.findAll();
+        StepVerifier verifier = requestOneByOne(flux);
+        verifier.verify();
+    }
+
+    private StepVerifier requestOneByOne(Flux<Users.User> flux) {
+        return StepVerifier.create(flux, 1)
+            .expectNext(Users.BOB)
+            .thenRequest(1)
+            .expectNext(Users.ALICE)
+            .thenCancel();
+    }
+
+    @Test
     public void transformAsync() throws Exception {
 
         ReactiveUserRepository reactiveUserRepository = new ReactiveUserRepository(Arrays.asList(Users.BOB, Users.ALICE));
@@ -192,6 +220,20 @@ public class ReactiveStreamsSpikeApplicationTests {
     //concat
     private Flux<Users.User> mergeFluxWithNoInterleave(Flux<Users.User> one, Flux<Users.User> two) {
         return Flux.concat(one, two);
+    }
+
+    @Test
+    public void fluxFromTwoMonos() throws Exception {
+
+        Mono<Users.User> monoBob = Mono.just(Users.BOB);
+        Mono<Users.User> monoAlice = Mono.just(Users.ALICE);
+
+        Flux<Users.User> fluxOfTwoMonos = Flux.concat(monoBob, monoAlice);
+
+        StepVerifier.create(fluxOfTwoMonos)
+            .expectNext(Users.BOB, Users.ALICE)
+            .expectComplete()
+            .verify();
     }
 
     /*
