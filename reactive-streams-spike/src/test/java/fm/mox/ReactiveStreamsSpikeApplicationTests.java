@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.function.Supplier;
 
 import org.junit.Test;
 
@@ -18,13 +19,6 @@ import reactor.test.StepVerifier;
 
 @Slf4j
 public class ReactiveStreamsSpikeApplicationTests {
-
-	/*
-    * imperative/blocking spring repository api
-async/non blocking show spring 5 repository
-items may be available in the same thread
-you show what should be done
-	* */
 
     @Test
     public void nothing() throws Exception {
@@ -93,6 +87,19 @@ you show what should be done
     }
 
     @Test
+    public void countVirtualTime() throws Exception {
+        //lambda:without, it would immediatly start to publish. needed for virtualtime to work
+        expectOneHourOfElements(() -> Flux.interval(Duration.ofSeconds(1)).take(3600));
+    }
+
+    private void expectOneHourOfElements(Supplier<Flux<Long>> supplier) {
+        StepVerifier.withVirtualTime(supplier)
+            .thenAwait(Duration.ofHours(1))
+            .expectNextCount(3600)
+            .expectComplete();
+    }
+
+    @Test
     public void noSignal() throws Exception {
 
         Mono<String> never = noSignalMono();
@@ -116,6 +123,7 @@ you show what should be done
         expectFooBarComplete(Flux.just("foo", "bar"));
     }
 
+//    any type of assertions lib
     private void expectFooBarComplete(Flux<String> flux) {
 //		fail();
         StepVerifier.create(flux)
@@ -124,20 +132,73 @@ you show what should be done
             .verify();
     }
 
+    @Test
+    public void transformAsync() throws Exception {
 
+        ReactiveUserRepository reactiveUserRepository = new ReactiveUserRepository(Arrays.asList(Users.BOB, Users.ALICE));
 
+        Flux<Users.User> all = reactiveUserRepository.findAll();
 
+        StepVerifier.create(asyncCapitalizeMany(all))
+            .expectNext(
+                new Users.User("BOB", "MARSHALL"),
+                new Users.User("ALICE", "FRENCH"))
+            .expectComplete()
+            .verify();
+    }
 
+    //    to go async we use flatMap and return
+    //e.g. remote service with latency
+    private Flux<Users.User> asyncCapitalizeMany(Flux<Users.User> all) {
+        return all.flatMap(this::asyncCapitalizeUser);
+    }
 
+    private Mono<Users.User> asyncCapitalizeUser(Users.User user) {
+        return Mono.just(new Users.User(user.getName().toUpperCase(), user.getSurname().toUpperCase()));
+    }
 
-	/*
-	* show unit tests:
+    @Test
+    public void mergeDelayWithInterleave() throws Exception {
+
+        ReactiveUserRepository slowRepository = new ReactiveUserRepository(Arrays.asList(Users.BOB, Users.ALICE),
+            Duration.ofMillis(500));
+        ReactiveUserRepository normalRepository = new ReactiveUserRepository(Arrays.asList(Users.CARL, Users.DAVE));
+
+        Flux<Users.User> mergedWithInterleave = mergeFluxWithInterleave(slowRepository.findAll(), normalRepository.findAll());
+
+        StepVerifier.create(mergedWithInterleave)
+            .expectNext(Users.CARL, Users.DAVE, Users.BOB, Users.ALICE)
+            .expectComplete().verify();
+    }
+
+    //merge
+    private Flux<Users.User> mergeFluxWithInterleave(Flux<Users.User> one, Flux<Users.User> two) {
+        return Flux.merge(one, two);
+    }
+
+    @Test
+    public void mergeDelayWithNoInterleave() throws Exception {
+
+        ReactiveUserRepository slowRepository = new ReactiveUserRepository(Arrays.asList(Users.BOB, Users.ALICE), Duration.ofMillis(500));
+        ReactiveUserRepository normalRepository = new ReactiveUserRepository(Arrays.asList(Users.CARL, Users.DAVE));
+
+        Flux<Users.User> mergedWithInterleave = mergeFluxWithNoInterleave(slowRepository.findAll(), normalRepository.findAll());
+
+        StepVerifier.create(mergedWithInterleave)
+            .expectNext(Users.BOB, Users.ALICE, Users.CARL, Users.DAVE)
+            .expectComplete().verify();
+    }
+
+    //concat
+    private Flux<Users.User> mergeFluxWithNoInterleave(Flux<Users.User> one, Flux<Users.User> two) {
+        return Flux.concat(one, two);
+    }
+
+    /*
+    * show unit tests:
 
 write the stepverifier instead
-any type of assertions lib
 
-with virtualtime use a supplier
-to go async we use flatMap and return
 
 control the demand in create(..., 1)
 
@@ -199,7 +260,7 @@ http://stackoverflow.com/questions/31276164/rxjava-schedulers-use-cases
     private Flux<Users.User> blockingRepositoryToFlux(BlockingUserRepository blockingUserRepository) {
 //        return Flux.fromIterable(blockingUserRepository.findAll()).subscribeOn(Schedulers.elastic());
         //defer
-		return Flux.defer(() -> Flux.fromIterable(blockingUserRepository.findAll()).subscribeOn(Schedulers.elastic()));
+        return Flux.defer(() -> Flux.fromIterable(blockingUserRepository.findAll()).subscribeOn(Schedulers.elastic()));
     }
 
     @Test

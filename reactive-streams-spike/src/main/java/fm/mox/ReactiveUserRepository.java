@@ -1,5 +1,6 @@
 package fm.mox;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.reactivestreams.Publisher;
@@ -14,8 +15,15 @@ public class ReactiveUserRepository implements ReactiveRepository<Users.User> {
 
     private final List<Users.User> users;
 
+    private final Duration delay;
+
     public ReactiveUserRepository(List<Users.User> users) {
+        this(users, Duration.ofMillis(0L));
+    }
+
+    public ReactiveUserRepository(List<Users.User> users, Duration delay) {
         this.users = users;
+        this.delay = delay;
     }
 
     @Override
@@ -30,7 +38,7 @@ public class ReactiveUserRepository implements ReactiveRepository<Users.User> {
 
     @Override
     public Flux<Users.User> findAll() {
-        return Flux.fromIterable(this.users);
+        return Flux.fromIterable(this.users).delay(this.delay);
     }
 
     @Override
