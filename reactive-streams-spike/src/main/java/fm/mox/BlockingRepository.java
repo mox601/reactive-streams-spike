@@ -12,4 +12,6 @@ public interface BlockingRepository<T> {
     Iterable<T> findAll();
 
     T findById(String id);
+
+    int getCallCount();
 }
