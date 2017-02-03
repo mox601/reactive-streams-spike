@@ -72,6 +72,20 @@ public class ReactiveStreamsSpikeApplicationTests {
     }
     //publishers flux and mono are try-catch-block all included
 
+
+    @Test
+    public void afterPublishingSomeThenError() throws Exception {
+
+        StepVerifier.create(publishOneThenError())
+            .expectNext("foo")
+            .expectError(IllegalStateException.class)
+            .verify();
+    }
+
+    private Flux<String> publishOneThenError() {
+        return Flux.concat(Mono.just("foo"), Flux.error(new IllegalStateException()));
+    }
+
     @Test
     public void withDelay() throws Exception {
         Flux<Long> flux = counter();
