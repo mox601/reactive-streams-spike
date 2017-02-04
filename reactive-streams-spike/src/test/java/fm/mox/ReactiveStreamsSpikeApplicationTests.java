@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -19,11 +20,14 @@ import java.util.function.Supplier;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest
 @Slf4j
 public class ReactiveStreamsSpikeApplicationTests {
 
     @Test
     public void nothing() throws Exception {
+        log.info("dafhewbcewbnwo");
         Flux<Integer> just = Flux.just(1, 2, 3);
     }
 
@@ -33,8 +37,8 @@ public class ReactiveStreamsSpikeApplicationTests {
         Flux<String> flux = emptyFlux();
 
         StepVerifier.create(flux) //automatically subscribes, request data
-            .expectComplete()
-            .verify();
+                .expectComplete()
+                .verify();
     }
 
     private Flux<String> emptyFlux() {
@@ -46,9 +50,9 @@ public class ReactiveStreamsSpikeApplicationTests {
         Flux<String> flux = twoVals();
 
         StepVerifier.create(flux) //can control bounded demand. requesting 1 would block
-            .expectNext("1", "2")
-            .expectComplete()
-            .verify();
+                .expectNext("1", "2")
+                .expectComplete()
+                .verify();
 
     }
 
@@ -63,8 +67,8 @@ public class ReactiveStreamsSpikeApplicationTests {
         Flux<String> flux = errorFlux();
 
         StepVerifier.create(flux)
-            .expectError(IllegalStateException.class)
-            .verify();
+                .expectError(IllegalStateException.class)
+                .verify();
     }
 
     //throwing won't work in an async context. exception might bubble up in different threads
@@ -79,9 +83,9 @@ public class ReactiveStreamsSpikeApplicationTests {
     public void afterPublishingSomeThenError() throws Exception {
 
         StepVerifier.create(publishOneThenError())
-            .expectNext("foo")
-            .expectError(IllegalStateException.class)
-            .verify();
+                .expectNext("foo")
+                .expectError(IllegalStateException.class)
+                .verify();
     }
 
     private Flux<String> publishOneThenError() {
@@ -93,9 +97,9 @@ public class ReactiveStreamsSpikeApplicationTests {
         Flux<Long> flux = counter();
 
         StepVerifier.create(flux)
-            .expectNext(0L, 1L, 2L)
-            .expectComplete()
-            .verify();
+                .expectNext(0L, 1L, 2L)
+                .expectComplete()
+                .verify();
     }
 
     private Flux<Long> counter() {
@@ -110,9 +114,9 @@ public class ReactiveStreamsSpikeApplicationTests {
 
     private void expectOneHourOfElements(Supplier<Flux<Long>> supplier) {
         StepVerifier.withVirtualTime(supplier)
-            .thenAwait(Duration.ofHours(1))
-            .expectNextCount(3600)
-            .expectComplete();
+                .thenAwait(Duration.ofHours(1))
+                .expectNextCount(3600)
+                .expectComplete();
     }
 
     @Test
@@ -121,10 +125,10 @@ public class ReactiveStreamsSpikeApplicationTests {
         Mono<String> never = noSignalMono();
 
         StepVerifier.create(never)
-            .expectSubscription()
-            .expectNoEvent(Duration.ofSeconds(1L)) //no events are emitted
-            .thenCancel()
-            .verify();
+                .expectSubscription()
+                .expectNoEvent(Duration.ofSeconds(1L)) //no events are emitted
+                .thenCancel()
+                .verify();
 
     }
 
@@ -139,13 +143,13 @@ public class ReactiveStreamsSpikeApplicationTests {
         expectFooBarComplete(Flux.just("foo", "bar"));
     }
 
-//    any type of assertions lib
+    //    any type of assertions lib
     private void expectFooBarComplete(Flux<String> flux) {
 //		fail();
         StepVerifier.create(flux)
-            .expectNext("foo", "bar")
-            .expectComplete()
-            .verify();
+                .expectNext("foo", "bar")
+                .expectComplete()
+                .verify();
     }
 
     @Test
@@ -170,10 +174,10 @@ public class ReactiveStreamsSpikeApplicationTests {
 
     private StepVerifier requestOneByOne(Flux<Users.User> flux) {
         return StepVerifier.create(flux, 1)
-            .expectNext(Users.BOB)
-            .thenRequest(1)
-            .expectNext(Users.ALICE)
-            .thenCancel();
+                .expectNext(Users.BOB)
+                .thenRequest(1)
+                .expectNext(Users.ALICE)
+                .thenCancel();
     }
 
     @Test
@@ -184,11 +188,11 @@ public class ReactiveStreamsSpikeApplicationTests {
         Flux<Users.User> all = reactiveUserRepository.findAll();
 
         StepVerifier.create(asyncCapitalizeMany(all))
-            .expectNext(
-                new Users.User("BOB", "MARSHALL"),
-                new Users.User("ALICE", "FRENCH"))
-            .expectComplete()
-            .verify();
+                .expectNext(
+                        new Users.User("BOB", "MARSHALL"),
+                        new Users.User("ALICE", "FRENCH"))
+                .expectComplete()
+                .verify();
     }
 
     //    to go async we use flatMap and return
@@ -205,14 +209,14 @@ public class ReactiveStreamsSpikeApplicationTests {
     public void mergeDelayWithInterleave() throws Exception {
 
         ReactiveUserRepository slowRepository = new ReactiveUserRepository(Arrays.asList(Users.BOB, Users.ALICE),
-            Duration.ofMillis(500));
+                Duration.ofMillis(500));
         ReactiveUserRepository normalRepository = new ReactiveUserRepository(Arrays.asList(Users.CARL, Users.DAVE));
 
         Flux<Users.User> mergedWithInterleave = mergeFluxWithInterleave(slowRepository.findAll(), normalRepository.findAll());
 
         StepVerifier.create(mergedWithInterleave)
-            .expectNext(Users.CARL, Users.DAVE, Users.BOB, Users.ALICE)
-            .expectComplete().verify();
+                .expectNext(Users.CARL, Users.DAVE, Users.BOB, Users.ALICE)
+                .expectComplete().verify();
     }
 
     //merge
@@ -229,8 +233,8 @@ public class ReactiveStreamsSpikeApplicationTests {
         Flux<Users.User> mergedWithInterleave = mergeFluxWithNoInterleave(slowRepository.findAll(), normalRepository.findAll());
 
         StepVerifier.create(mergedWithInterleave)
-            .expectNext(Users.BOB, Users.ALICE, Users.CARL, Users.DAVE)
-            .expectComplete().verify();
+                .expectNext(Users.BOB, Users.ALICE, Users.CARL, Users.DAVE)
+                .expectComplete().verify();
     }
 
     //concat
@@ -247,9 +251,9 @@ public class ReactiveStreamsSpikeApplicationTests {
         Flux<Users.User> fluxOfTwoMonos = Flux.concat(monoBob, monoAlice);
 
         StepVerifier.create(fluxOfTwoMonos)
-            .expectNext(Users.BOB, Users.ALICE)
-            .expectComplete()
-            .verify();
+                .expectNext(Users.BOB, Users.ALICE)
+                .expectComplete()
+                .verify();
     }
 
     /*
@@ -278,7 +282,6 @@ block() will block the current thread, you should be aware which threadpool you 
 
 	* */
 
-
     //	slow publisher e.g., blocking IO, fast consumer(s) scenarios.
     @Test
     public void slowPublisherFastSubscriber() throws Exception {
@@ -289,9 +292,9 @@ block() will block the current thread, you should be aware which threadpool you 
         assertEquals("findAll should be deferred until subscribe", 0, blockingUserRepository.getCallCount());
 
         StepVerifier.create(flux)
-            .expectNext(Users.BOB, Users.ALICE)
-            .expectComplete()
-            .verify();
+                .expectNext(Users.BOB, Users.ALICE)
+                .expectComplete()
+                .verify();
     }
 
     //run subscribe, onsubscribe and request on different thread
