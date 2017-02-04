@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -25,42 +24,6 @@ import static org.junit.Assert.assertFalse;
 @Slf4j
 public class ReactiveStreamsSpikeApplicationTests {
 
-    @Test
-    public void nothing() throws Exception {
-        log.info("dafhewbcewbnwo");
-        Flux<Integer> just = Flux.just(1, 2, 3);
-    }
-
-    @Test
-    public void empty() throws Exception {
-
-        Flux<String> flux = emptyFlux();
-
-        StepVerifier.create(flux) //automatically subscribes, request data
-                .expectComplete()
-                .verify();
-    }
-
-    private Flux<String> emptyFlux() {
-        return Flux.empty();
-    }
-
-    @Test
-    public void twoValues() throws Exception {
-        Flux<String> flux = twoVals();
-
-        StepVerifier.create(flux) //can control bounded demand. requesting 1 would block
-                .expectNext("1", "2")
-                .expectComplete()
-                .verify();
-
-    }
-
-    private Flux<String> twoVals() {
-//		return Flux.fromIterable(Arrays.asList("1", "3"));
-// 		.log()
-        return Flux.just("1", "2");
-    }
 
     @Test
     public void errors() throws Exception {
@@ -208,8 +171,8 @@ public class ReactiveStreamsSpikeApplicationTests {
     @Test
     public void mergeDelayWithInterleave() throws Exception {
 
-        ReactiveUserRepository slowRepository = new ReactiveUserRepository(Arrays.asList(User.BOB, User.ALICE),
-                Duration.ofMillis(500));
+        ReactiveUserRepository slowRepository = new ReactiveUserRepository(500, Arrays.asList(User.BOB, User.ALICE)
+        );
         ReactiveUserRepository normalRepository = new ReactiveUserRepository(Arrays.asList(User.CARL, User.DAVE));
 
         Flux<User> mergedWithInterleave = mergeFluxWithInterleave(slowRepository.findAll(), normalRepository.findAll());
@@ -227,7 +190,7 @@ public class ReactiveStreamsSpikeApplicationTests {
     @Test
     public void mergeDelayWithNoInterleave() throws Exception {
 
-        ReactiveUserRepository slowRepository = new ReactiveUserRepository(Arrays.asList(User.BOB, User.ALICE), Duration.ofMillis(500));
+        ReactiveUserRepository slowRepository = new ReactiveUserRepository(500, Arrays.asList(User.BOB, User.ALICE));
         ReactiveUserRepository normalRepository = new ReactiveUserRepository(Arrays.asList(User.CARL, User.DAVE));
 
         Flux<User> mergedWithInterleave = mergeFluxWithNoInterleave(slowRepository.findAll(), normalRepository.findAll());

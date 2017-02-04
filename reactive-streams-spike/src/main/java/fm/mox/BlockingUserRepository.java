@@ -1,5 +1,8 @@
 package fm.mox;
 
+import reactor.core.publisher.Mono;
+
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,61 +11,54 @@ import java.util.List;
  */
 public class BlockingUserRepository implements BlockingRepository<User> {
 
-    private final List<User> users;
 
-    private int callCount;
+    private final ReactiveRepository<User> reactiveRepository;
 
-    private final long interval;
+    private int callCount = 0;
 
     public BlockingUserRepository() {
-        this(new ArrayList<>());
+        reactiveRepository = new ReactiveUserRepository();
+    }
+
+    public BlockingUserRepository(long delayInMs) {
+        reactiveRepository = new ReactiveUserRepository(delayInMs);
     }
 
     public BlockingUserRepository(List<User> users) {
-        this(users, 0L);
+        reactiveRepository = new ReactiveUserRepository(users);
     }
 
-    public BlockingUserRepository(List<User> users, long interval) {
-        this.users = users;
-        this.callCount = 0;
-        this.interval = interval;
+    public BlockingUserRepository(long delayInMs, List<User> users) {
+        reactiveRepository = new ReactiveUserRepository(delayInMs, users);
     }
+
 
     @Override
     public void save(User user) {
-        this.callCount++;
-        sleep();
-        this.users.add(user);
+        callCount++;
+        reactiveRepository.save(Mono.just(user)).block();
     }
 
     @Override
     public User findFirst() {
-        return null;
+        callCount++;
+        return reactiveRepository.findFirst().block();
     }
 
     @Override
     public Iterable<User> findAll() {
-        this.callCount++;
-        sleep();
-        return this.users;
+        callCount++;
+        return reactiveRepository.findAll().toIterable();
     }
 
     @Override
-    public User findById(String id) {
-        sleep();
-        return null;
+    public User findById(String username) {
+        callCount++;
+        return reactiveRepository.findById(username).block();
     }
 
-    @Override
     public int getCallCount() {
-        return this.callCount;
+        return callCount;
     }
 
-    private void sleep() {
-        try {
-            Thread.sleep(this.interval);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
 }
