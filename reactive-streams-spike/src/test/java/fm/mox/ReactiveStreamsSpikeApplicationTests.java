@@ -154,104 +154,104 @@ public class ReactiveStreamsSpikeApplicationTests {
 
     @Test
     public void askAllExpectTwo() throws Exception {
-        ReactiveUserRepository reactiveUserRepository = new ReactiveUserRepository(Arrays.asList(Users.BOB, Users.ALICE));
-        Flux<Users.User> flux = reactiveUserRepository.findAll();
+        ReactiveUserRepository reactiveUserRepository = new ReactiveUserRepository(Arrays.asList(User.BOB, User.ALICE));
+        Flux<User> flux = reactiveUserRepository.findAll();
         StepVerifier verifier = requestAllExpectTwo(flux);
         verifier.verify();
     }
 
-    private StepVerifier requestAllExpectTwo(Flux<Users.User> flux) {
+    private StepVerifier requestAllExpectTwo(Flux<User> flux) {
         return StepVerifier.create(flux).expectNextCount(2).expectComplete();
     }
 
     @Test
     public void askOneByOne() throws Exception {
-        ReactiveUserRepository reactiveUserRepository = new ReactiveUserRepository(Arrays.asList(Users.BOB, Users.ALICE, Users.CARL));
-        Flux<Users.User> flux = reactiveUserRepository.findAll();
+        ReactiveUserRepository reactiveUserRepository = new ReactiveUserRepository(Arrays.asList(User.BOB, User.ALICE, User.CARL));
+        Flux<User> flux = reactiveUserRepository.findAll();
         StepVerifier verifier = requestOneByOne(flux);
         verifier.verify();
     }
 
-    private StepVerifier requestOneByOne(Flux<Users.User> flux) {
+    private StepVerifier requestOneByOne(Flux<User> flux) {
         return StepVerifier.create(flux, 1)
-                .expectNext(Users.BOB)
+                .expectNext(User.BOB)
                 .thenRequest(1)
-                .expectNext(Users.ALICE)
+                .expectNext(User.ALICE)
                 .thenCancel();
     }
 
     @Test
     public void transformAsync() throws Exception {
 
-        ReactiveUserRepository reactiveUserRepository = new ReactiveUserRepository(Arrays.asList(Users.BOB, Users.ALICE));
+        ReactiveUserRepository reactiveUserRepository = new ReactiveUserRepository(Arrays.asList(User.BOB, User.ALICE));
 
-        Flux<Users.User> all = reactiveUserRepository.findAll();
+        Flux<User> all = reactiveUserRepository.findAll();
 
         StepVerifier.create(asyncCapitalizeMany(all))
                 .expectNext(
-                        new Users.User("BOB", "MARSHALL"),
-                        new Users.User("ALICE", "FRENCH"))
+                        new User("BOB", "MARSHALL"),
+                        new User("ALICE", "FRENCH"))
                 .expectComplete()
                 .verify();
     }
 
     //    to go async we use flatMap and return
     //e.g. remote service with latency
-    private Flux<Users.User> asyncCapitalizeMany(Flux<Users.User> all) {
+    private Flux<User> asyncCapitalizeMany(Flux<User> all) {
         return all.flatMap(this::asyncCapitalizeUser);
     }
 
-    private Mono<Users.User> asyncCapitalizeUser(Users.User user) {
-        return Mono.just(new Users.User(user.getName().toUpperCase(), user.getSurname().toUpperCase()));
+    private Mono<User> asyncCapitalizeUser(User user) {
+        return Mono.just(new User(user.getName().toUpperCase(), user.getSurname().toUpperCase()));
     }
 
     @Test
     public void mergeDelayWithInterleave() throws Exception {
 
-        ReactiveUserRepository slowRepository = new ReactiveUserRepository(Arrays.asList(Users.BOB, Users.ALICE),
+        ReactiveUserRepository slowRepository = new ReactiveUserRepository(Arrays.asList(User.BOB, User.ALICE),
                 Duration.ofMillis(500));
-        ReactiveUserRepository normalRepository = new ReactiveUserRepository(Arrays.asList(Users.CARL, Users.DAVE));
+        ReactiveUserRepository normalRepository = new ReactiveUserRepository(Arrays.asList(User.CARL, User.DAVE));
 
-        Flux<Users.User> mergedWithInterleave = mergeFluxWithInterleave(slowRepository.findAll(), normalRepository.findAll());
+        Flux<User> mergedWithInterleave = mergeFluxWithInterleave(slowRepository.findAll(), normalRepository.findAll());
 
         StepVerifier.create(mergedWithInterleave)
-                .expectNext(Users.CARL, Users.DAVE, Users.BOB, Users.ALICE)
+                .expectNext(User.CARL, User.DAVE, User.BOB, User.ALICE)
                 .expectComplete().verify();
     }
 
     //merge
-    private Flux<Users.User> mergeFluxWithInterleave(Flux<Users.User> one, Flux<Users.User> two) {
+    private Flux<User> mergeFluxWithInterleave(Flux<User> one, Flux<User> two) {
         return Flux.merge(one, two);
     }
 
     @Test
     public void mergeDelayWithNoInterleave() throws Exception {
 
-        ReactiveUserRepository slowRepository = new ReactiveUserRepository(Arrays.asList(Users.BOB, Users.ALICE), Duration.ofMillis(500));
-        ReactiveUserRepository normalRepository = new ReactiveUserRepository(Arrays.asList(Users.CARL, Users.DAVE));
+        ReactiveUserRepository slowRepository = new ReactiveUserRepository(Arrays.asList(User.BOB, User.ALICE), Duration.ofMillis(500));
+        ReactiveUserRepository normalRepository = new ReactiveUserRepository(Arrays.asList(User.CARL, User.DAVE));
 
-        Flux<Users.User> mergedWithInterleave = mergeFluxWithNoInterleave(slowRepository.findAll(), normalRepository.findAll());
+        Flux<User> mergedWithInterleave = mergeFluxWithNoInterleave(slowRepository.findAll(), normalRepository.findAll());
 
         StepVerifier.create(mergedWithInterleave)
-                .expectNext(Users.BOB, Users.ALICE, Users.CARL, Users.DAVE)
+                .expectNext(User.BOB, User.ALICE, User.CARL, User.DAVE)
                 .expectComplete().verify();
     }
 
     //concat
-    private Flux<Users.User> mergeFluxWithNoInterleave(Flux<Users.User> one, Flux<Users.User> two) {
+    private Flux<User> mergeFluxWithNoInterleave(Flux<User> one, Flux<User> two) {
         return Flux.concat(one, two);
     }
 
     @Test
     public void fluxFromTwoMonos() throws Exception {
 
-        Mono<Users.User> monoBob = Mono.just(Users.BOB);
-        Mono<Users.User> monoAlice = Mono.just(Users.ALICE);
+        Mono<User> monoBob = Mono.just(User.BOB);
+        Mono<User> monoAlice = Mono.just(User.ALICE);
 
-        Flux<Users.User> fluxOfTwoMonos = Flux.concat(monoBob, monoAlice);
+        Flux<User> fluxOfTwoMonos = Flux.concat(monoBob, monoAlice);
 
         StepVerifier.create(fluxOfTwoMonos)
-                .expectNext(Users.BOB, Users.ALICE)
+                .expectNext(User.BOB, User.ALICE)
                 .expectComplete()
                 .verify();
     }
@@ -286,20 +286,20 @@ block() will block the current thread, you should be aware which threadpool you 
     @Test
     public void slowPublisherFastSubscriber() throws Exception {
         //e.g. jdbc
-        BlockingUserRepository blockingUserRepository = new BlockingUserRepository(Arrays.asList(Users.BOB, Users.ALICE));
-        Flux<Users.User> flux = blockingRepositoryToFlux(blockingUserRepository);
+        BlockingUserRepository blockingUserRepository = new BlockingUserRepository(Arrays.asList(User.BOB, User.ALICE));
+        Flux<User> flux = blockingRepositoryToFlux(blockingUserRepository);
 
         assertEquals("findAll should be deferred until subscribe", 0, blockingUserRepository.getCallCount());
 
         StepVerifier.create(flux)
-                .expectNext(Users.BOB, Users.ALICE)
+                .expectNext(User.BOB, User.ALICE)
                 .expectComplete()
                 .verify();
     }
 
     //run subscribe, onsubscribe and request on different thread
     //findAll is triggered by subscription
-    private Flux<Users.User> blockingRepositoryToFlux(BlockingUserRepository blockingUserRepository) {
+    private Flux<User> blockingRepositoryToFlux(BlockingUserRepository blockingUserRepository) {
 //        return Flux.fromIterable(blockingUserRepository.findAll()).subscribeOn(Schedulers.elastic());
         //defer
         return Flux.defer(() -> Flux.fromIterable(blockingUserRepository.findAll()).subscribeOn(Schedulers.elastic()));
@@ -308,23 +308,23 @@ block() will block the current thread, you should be aware which threadpool you 
     @Test
     public void fastPublisherSlowSubscriber() throws Exception {
 
-        BlockingRepository<Users.User> blockingRepository = new BlockingUserRepository(new ArrayList<>());
-        ReactiveRepository<Users.User> reactiveRepository = new ReactiveUserRepository(Arrays.asList(Users.BOB, Users.ALICE));
+        BlockingRepository<User> blockingRepository = new BlockingUserRepository(new ArrayList<>());
+        ReactiveRepository<User> reactiveRepository = new ReactiveUserRepository(Arrays.asList(User.BOB, User.ALICE));
         Mono<Void> complete = fluxToSaveBlockingRepository(reactiveRepository.findAll(), blockingRepository);
 
         assertEquals(0, blockingRepository.getCallCount());
 
         StepVerifier.create(complete).expectComplete().verify();
 
-        Iterator<Users.User> it = blockingRepository.findAll().iterator();
-        assertEquals(Users.BOB, it.next());
-        assertEquals(Users.ALICE, it.next());
+        Iterator<User> it = blockingRepository.findAll().iterator();
+        assertEquals(User.BOB, it.next());
+        assertEquals(User.ALICE, it.next());
         assertFalse(it.hasNext());
 
     }
 
     //publishOn run onNext on parallel
-    private Mono<Void> fluxToSaveBlockingRepository(Flux<Users.User> flux, BlockingRepository<Users.User> blockingRepository) {
+    private Mono<Void> fluxToSaveBlockingRepository(Flux<User> flux, BlockingRepository<User> blockingRepository) {
         return flux.publishOn(Schedulers.parallel()).doOnNext(blockingRepository::save).then();
     }
 

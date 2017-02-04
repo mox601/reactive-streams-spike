@@ -11,38 +11,38 @@ import reactor.core.publisher.Mono;
 /**
  * Created by mmoci (mmoci at expedia dot com).
  */
-public class ReactiveUserRepository implements ReactiveRepository<Users.User> {
+public class ReactiveUserRepository implements ReactiveRepository<User> {
 
-    private final List<Users.User> users;
+    private final List<User> users;
 
     private final Duration delay;
 
-    public ReactiveUserRepository(List<Users.User> users) {
+    public ReactiveUserRepository(List<User> users) {
         this(users, Duration.ofMillis(0L));
     }
 
-    public ReactiveUserRepository(List<Users.User> users, Duration delay) {
+    public ReactiveUserRepository(List<User> users, Duration delay) {
         this.users = users;
         this.delay = delay;
     }
 
     @Override
-    public Mono<Void> save(Publisher<Users.User> p) {
+    public Mono<Void> save(Publisher<User> p) {
         return null;
     }
 
     @Override
-    public Mono<Users.User> findFirst() {
+    public Mono<User> findFirst() {
         return null;
     }
 
     @Override
-    public Flux<Users.User> findAll() {
+    public Flux<User> findAll() {
         return Flux.fromIterable(this.users).delay(this.delay);
     }
 
     @Override
-    public Mono<Users.User> findById(String id) {
+    public Mono<User> findById(String id) {
         return null;
     }
 }

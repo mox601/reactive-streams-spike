@@ -6,9 +6,9 @@ import java.util.List;
 /**
  * Created by mmoci (mmoci at expedia dot com).
  */
-public class BlockingUserRepository implements BlockingRepository<Users.User> {
+public class BlockingUserRepository implements BlockingRepository<User> {
 
-    private final List<Users.User> users;
+    private final List<User> users;
 
     private int callCount;
 
@@ -18,37 +18,37 @@ public class BlockingUserRepository implements BlockingRepository<Users.User> {
         this(new ArrayList<>());
     }
 
-    public BlockingUserRepository(List<Users.User> users) {
+    public BlockingUserRepository(List<User> users) {
         this(users, 0L);
     }
 
-    public BlockingUserRepository(List<Users.User> users, long interval) {
+    public BlockingUserRepository(List<User> users, long interval) {
         this.users = users;
         this.callCount = 0;
         this.interval = interval;
     }
 
     @Override
-    public void save(Users.User user) {
+    public void save(User user) {
         this.callCount++;
         sleep();
         this.users.add(user);
     }
 
     @Override
-    public Users.User findFirst() {
+    public User findFirst() {
         return null;
     }
 
     @Override
-    public Iterable<Users.User> findAll() {
+    public Iterable<User> findAll() {
         this.callCount++;
         sleep();
         return this.users;
     }
 
     @Override
-    public Users.User findById(String id) {
+    public User findById(String id) {
         sleep();
         return null;
     }
