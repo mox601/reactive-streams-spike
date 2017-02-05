@@ -1,64 +1,109 @@
 package fm.mox;
 
+import com.google.common.collect.Lists;
+import org.springframework.data.domain.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Created by mmoci (mmoci at expedia dot com).
  */
-public class BlockingUserRepository implements BlockingRepository<User> {
+public class BlockingUserRepository implements UserRepository {
 
+    private final ReactiveRepository<User, String> reactiveRepository;
 
-    private final ReactiveRepository<User> reactiveRepository;
-
-    private int callCount = 0;
+    private int callCount;
 
     public BlockingUserRepository() {
-        reactiveRepository = new ReactiveUserRepository();
+        this.reactiveRepository = new ReactiveUserRepository();
     }
 
     public BlockingUserRepository(long delayInMs) {
-        reactiveRepository = new ReactiveUserRepository(delayInMs);
+        this.reactiveRepository = new ReactiveUserRepository(delayInMs);
     }
 
     public BlockingUserRepository(List<User> users) {
-        reactiveRepository = new ReactiveUserRepository(users);
+        this.reactiveRepository = new ReactiveUserRepository(users);
     }
 
     public BlockingUserRepository(long delayInMs, List<User> users) {
-        reactiveRepository = new ReactiveUserRepository(delayInMs, users);
-    }
-
-
-    @Override
-    public void save(User user) {
-        callCount++;
-        reactiveRepository.save(Mono.just(user)).block();
+        this.reactiveRepository = new ReactiveUserRepository(delayInMs, users);
+        this.callCount = 0;
     }
 
     @Override
-    public User findFirst() {
-        callCount++;
-        return reactiveRepository.findFirst().block();
+    public User save(User user) {
+        this.callCount++;
+        return reactiveRepository.save(Mono.just(user)).block();
+    }
+
+    @Override
+    public <S extends User> Iterable<S> save(Iterable<S> iterable) {
+        throw new UnsupportedOperationException("not implemented yet");
+    }
+
+    @Override
+    public User findOne(String username) {
+        this.callCount++;
+        return reactiveRepository.findById(username).block();
+    }
+
+    @Override
+    public boolean exists(String s) {
+        throw new UnsupportedOperationException("not implemented yet");
     }
 
     @Override
     public Iterable<User> findAll() {
-        callCount++;
-        return reactiveRepository.findAll().toIterable();
+        this.callCount++;
+        return this.reactiveRepository.findAll().toIterable();
     }
 
     @Override
-    public User findById(String username) {
-        callCount++;
-        return reactiveRepository.findById(username).block();
+    public Iterable<User> findAll(Iterable<String> iterable) {
+        throw new UnsupportedOperationException("not implemented yet");
+    }
+
+    @Override
+    public long count() {
+        return this.reactiveRepository.findAll().count().block();
+    }
+
+    @Override
+    public void delete(String s) {
+        throw new UnsupportedOperationException("not implemented yet");
+    }
+
+    @Override
+    public void delete(User user) {
+        throw new UnsupportedOperationException("not implemented yet");
+    }
+
+    @Override
+    public void delete(Iterable<? extends User> iterable) {
+        throw new UnsupportedOperationException("not implemented yet");
+    }
+
+    @Override
+    public void deleteAll() {
+        throw new UnsupportedOperationException("not implemented yet");
     }
 
     public int getCallCount() {
-        return callCount;
+        return this.callCount;
     }
 
+    @Override
+    public Iterable<User> findAll(Sort sort) {
+        throw new UnsupportedOperationException("not implemented yet");
+    }
+
+    @Override
+    public Page<User> findAll(Pageable pageable) {
+        return this.reactiveRepository.findAll(Mono.just(pageable)).block();
+    }
 }

@@ -5,17 +5,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
+import com.google.common.collect.Lists;
 import org.reactivestreams.Publisher;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
  * Created by mmoci (mmoci at expedia dot com).
  */
-public class ReactiveUserRepository implements ReactiveRepository<User> {
-
+public class ReactiveUserRepository implements ReactiveRepository<User, String> {
 
     private final static long DEFAULT_DELAY_IN_MS = 100;
 
@@ -41,40 +46,65 @@ public class ReactiveUserRepository implements ReactiveRepository<User> {
         this.users = users;
     }
 
-
     @Override
-    public Mono<Void> save(Publisher<User> userPublisher) {
-        return withDelay(Flux.from(userPublisher)).doOnNext(users::add).then();
-    }
-
-    @Override
-    public Mono<User> findFirst() {
-        return withDelay(Mono.just(users.get(0)));
+    public Mono<User> save(Publisher<User> userPublisher) {
+        return Mono.from(withDelay(Flux.from(userPublisher)).map(user -> {
+            this.users.add(user);
+            return user;
+        }));
     }
 
     @Override
     public Flux<User> findAll() {
-        return withDelay(Flux.fromIterable(users));
+        return withDelay(Flux.fromIterable(this.users));
     }
 
     @Override
     public Mono<User> findById(String name) {
-        User user = users.stream().filter((p) -> p.getName().equals(name))
+        User user = this.users.stream().filter((p) -> p.getName().equals(name))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("No user with name " + name + " found!"));
         return withDelay(Mono.just(user));
     }
 
+    @Override
+    public Mono<Page<User>> findAll(Publisher<Pageable> pageablePublisher) {
 
-    private Mono<User> withDelay(Mono<User> userMono) {
-        return Mono
-                .delay(Duration.ofMillis(delayInMs))
-                .then(c -> userMono);
+        return Mono.from(withDelay(Flux.from(pageablePublisher)).flatMap(pageable -> {
+
+            int offset = pageable.getOffset();
+
+            int pageNumber = pageable.getPageNumber();
+
+            int pageSize = pageable.getPageSize();
+
+            final long total = this.users.size();
+
+            int toIndex = (pageNumber + 1) * pageSize;
+
+            Mono<Page<User>> usersPage = Mono.empty();
+
+            if (toIndex <= total) {
+                List<User> arrayList = this.users.subList(offset, toIndex);
+                Pageable aPageable = new PageRequest(pageNumber, pageSize);
+                Page<User> data = new PageImpl<>(arrayList, aPageable, total);
+                usersPage = Mono.just(data);
+            }
+
+            return usersPage;
+        }));
+
     }
 
-    private Flux<User> withDelay(Flux<User> userFlux) {
+    private <T> Mono<T> withDelay(Mono<T> aMono) {
+        return Mono
+                .delay(Duration.ofMillis(this.delayInMs))
+                .then(c -> aMono);
+    }
+
+    private <T> Flux<T> withDelay(Flux<T> userFlux) {
         return Flux
-                .interval(Duration.ofMillis(delayInMs))
+                .interval(Duration.ofMillis(this.delayInMs))
                 .zipWith(userFlux, (i, user) -> user);
     }
 }

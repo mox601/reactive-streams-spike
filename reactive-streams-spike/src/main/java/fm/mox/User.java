@@ -7,6 +7,7 @@ import lombok.Value;
  */
 @Value
 public class User {
+
     public static final User ALICE = new User("Alice", "French");
     public static final User BOB = new User("Bob", "Marshall");
     public static final User CARL = new User("Carl", "Wilson");

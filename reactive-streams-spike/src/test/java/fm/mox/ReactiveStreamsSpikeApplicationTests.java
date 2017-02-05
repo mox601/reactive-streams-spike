@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.Repository;
 import org.springframework.test.context.junit4.SpringRunner;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -271,8 +273,8 @@ block() will block the current thread, you should be aware which threadpool you 
     @Test
     public void fastPublisherSlowSubscriber() throws Exception {
 
-        BlockingRepository<User> blockingRepository = new BlockingUserRepository(new ArrayList<>());
-        ReactiveRepository<User> reactiveRepository = new ReactiveUserRepository(Arrays.asList(User.BOB, User.ALICE));
+        BlockingUserRepository blockingRepository = new BlockingUserRepository(new ArrayList<>());
+        ReactiveRepository<User, String> reactiveRepository = new ReactiveUserRepository(Arrays.asList(User.BOB, User.ALICE));
         Mono<Void> complete = fluxToSaveBlockingRepository(reactiveRepository.findAll(), blockingRepository);
 
         assertEquals(0, blockingRepository.getCallCount());
@@ -287,7 +289,7 @@ block() will block the current thread, you should be aware which threadpool you 
     }
 
     //publishOn run onNext on parallel
-    private Mono<Void> fluxToSaveBlockingRepository(Flux<User> flux, BlockingRepository<User> blockingRepository) {
+    private Mono<Void> fluxToSaveBlockingRepository(Flux<User> flux, CrudRepository<User, String> blockingRepository) {
         return flux.publishOn(Schedulers.parallel()).doOnNext(blockingRepository::save).then();
     }
 
