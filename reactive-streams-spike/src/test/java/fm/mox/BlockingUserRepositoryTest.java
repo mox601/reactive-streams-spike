@@ -50,6 +50,15 @@ public class BlockingUserRepositoryTest {
         Pageable three = two.next();
         Page<User> pageThree = blockingUserRepository.findAll(three);
         assertNull(pageThree);
+
+        PageRequest zeroPageTenRequest = new PageRequest(0, 10);
+        Page<User> pageZeroTen = blockingUserRepository.findAll(zeroPageTenRequest);
+        assertEquals(users.size(), pageZeroTen.getTotalElements());
+        assertEquals(0, pageZeroTen.getNumber());
+        assertEquals(3, pageZeroTen.getNumberOfElements());
+        assertEquals(10, pageZeroTen.getSize());
+        assertEquals(User.ALICE, pageZeroTen.getContent().get(0));
+
     }
 
 }
