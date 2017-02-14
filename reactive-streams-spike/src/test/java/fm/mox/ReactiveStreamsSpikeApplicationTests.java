@@ -1,7 +1,15 @@
 package fm.mox;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.test.context.junit4.SpringRunner;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import reactor.test.StepVerifier;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -9,17 +17,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.function.Supplier;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-import reactor.test.StepVerifier;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -32,8 +31,8 @@ public class ReactiveStreamsSpikeApplicationTests {
         Flux<String> flux = errorFlux();
 
         StepVerifier.create(flux)
-                .expectError(IllegalStateException.class)
-                .verify();
+//                .expectError(IllegalStateException.class)
+                .verifyError(IllegalStateException.class);
     }
 
     //throwing won't work in an async context. exception might bubble up in different threads
@@ -49,8 +48,8 @@ public class ReactiveStreamsSpikeApplicationTests {
 
         StepVerifier.create(publishOneThenError())
                 .expectNext("foo")
-                .expectError(IllegalStateException.class)
-                .verify();
+                .verifyError(IllegalStateException.class);
+//                .verify();
     }
 
     private Flux<String> publishOneThenError() {
@@ -63,8 +62,8 @@ public class ReactiveStreamsSpikeApplicationTests {
 
         StepVerifier.create(flux)
                 .expectNext(0L, 1L, 2L)
-                .expectComplete()
-                .verify();
+                .verifyComplete();
+//                .verify();
     }
 
     private Flux<Long> counter() {
@@ -113,8 +112,8 @@ public class ReactiveStreamsSpikeApplicationTests {
 //		fail();
         StepVerifier.create(flux)
                 .expectNext("foo", "bar")
-                .expectComplete()
-                .verify();
+                .verifyComplete();
+//                .verify();
     }
 
     @Test
@@ -156,8 +155,8 @@ public class ReactiveStreamsSpikeApplicationTests {
                 .expectNext(
                         new User("BOB", "MARSHALL"),
                         new User("ALICE", "FRENCH"))
-                .expectComplete()
-                .verify();
+                .verifyComplete();
+//                .verify();
     }
 
     //    to go async we use flatMap and return
@@ -181,7 +180,7 @@ public class ReactiveStreamsSpikeApplicationTests {
 
         StepVerifier.create(mergedWithInterleave)
                 .expectNext(User.CARL, User.DAVE, User.BOB, User.ALICE)
-                .expectComplete().verify();
+                .verifyComplete();
     }
 
     //merge
@@ -199,7 +198,7 @@ public class ReactiveStreamsSpikeApplicationTests {
 
         StepVerifier.create(mergedWithInterleave)
                 .expectNext(User.BOB, User.ALICE, User.CARL, User.DAVE)
-                .expectComplete().verify();
+                .verifyComplete();
     }
 
     //concat
@@ -217,8 +216,8 @@ public class ReactiveStreamsSpikeApplicationTests {
 
         StepVerifier.create(fluxOfTwoMonos)
                 .expectNext(User.BOB, User.ALICE)
-                .expectComplete()
-                .verify();
+                .verifyComplete();
+//                .verify();
     }
 
     /*
@@ -258,8 +257,8 @@ block() will block the current thread, you should be aware which threadpool you 
 
         StepVerifier.create(flux)
                 .expectNext(User.BOB, User.ALICE)
-                .expectComplete()
-                .verify();
+                .verifyComplete();
+//                .verify();
     }
 
     //run subscribe, onsubscribe and request on different thread

@@ -74,7 +74,7 @@ public class ReactiveUserRepository implements ReactiveRepository<User, String> 
 
             int pageSize = pageable.getPageSize();
 
-            final int total = this.users.size();
+            int total = this.users.size();
 
             int toIndex = (pageNumber + 1) * pageSize;
 

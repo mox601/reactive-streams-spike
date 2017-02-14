@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.reactivestreams.Publisher;
-import org.reactivestreams.Subscriber;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import reactor.core.publisher.Flux;
@@ -16,9 +15,6 @@ import reactor.util.function.Tuples;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Observable;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * Created by matteo (dot) moci (at) gmail (dot) com
@@ -62,12 +58,16 @@ public class E09ComplexTest {
 
         Mono<String> fromCache = reactiveCache.get(just);
 
+        Mono<String> fromRepository = reactiveRepository.getById(just);
+
         //TODO update cache
-        Mono<String> fromRepositoryWithSave = reactiveRepository.getById(just)
+        Mono<String> fromRepositoryWithSave = fromRepository
                 .doOnNext(value -> reactiveCache.put(Mono.just(Tuples.of(key, value))));
 
 //        Mono<String> stringMono = fromCache.otherwiseIfEmpty(single);
         Flux<String> concat = Flux.concat(fromCache, fromRepositoryWithSave);
+
+        fromCache.otherwiseIfEmpty(fromRepositoryWithSave);
 
     }
 
@@ -118,9 +118,10 @@ public class E09ComplexTest {
         @Override
         public Mono<V> put(Publisher<Tuple2<K, V>> kv) {
             return Mono.from(kv).map(kvTuple2 -> {
-                V t2 = kvTuple2.getT2();
-                map.put(kvTuple2.getT1(), t2);
-                return t2;
+                V val = kvTuple2.getT2();
+                K key = kvTuple2.getT1();
+                map.put(key, val);
+                return val;
             });
         }
     }
