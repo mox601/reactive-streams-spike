@@ -1,15 +1,7 @@
 package fm.mox;
 
-import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.test.context.junit4.SpringRunner;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-import reactor.test.StepVerifier;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -17,44 +9,22 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.function.Supplier;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import reactor.test.StepVerifier;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Slf4j
 public class ReactiveStreamsSpikeApplicationTests {
-
-
-    @Test
-    public void errors() throws Exception {
-        Flux<String> flux = errorFlux();
-
-        StepVerifier.create(flux)
-//                .expectError(IllegalStateException.class)
-                .verifyError(IllegalStateException.class);
-    }
-
-    //throwing won't work in an async context. exception might bubble up in different threads
-    private Flux<String> errorFlux() {
-//		throw new IllegalStateException(); // can't do this
-        return Flux.error(new IllegalStateException());
-    }
-    //publishers flux and mono are try-catch-block all included
-
-
-    @Test
-    public void afterPublishingSomeThenError() throws Exception {
-
-        StepVerifier.create(publishOneThenError())
-                .expectNext("foo")
-                .verifyError(IllegalStateException.class);
-//                .verify();
-    }
-
-    private Flux<String> publishOneThenError() {
-        return Flux.concat(Mono.just("foo"), Flux.error(new IllegalStateException()));
-    }
 
     @Test
     public void withDelay() throws Exception {
@@ -98,50 +68,6 @@ public class ReactiveStreamsSpikeApplicationTests {
 
     private Mono<String> noSignalMono() {
         return Mono.never();
-    }
-
-    ///////////////////// write the verifier instead
-
-    @Test
-    public void expectElementsThenComplete() throws Exception {
-        expectFooBarComplete(Flux.just("foo", "bar"));
-    }
-
-    //    any type of assertions lib
-    private void expectFooBarComplete(Flux<String> flux) {
-//		fail();
-        StepVerifier.create(flux)
-                .expectNext("foo", "bar")
-                .verifyComplete();
-//                .verify();
-    }
-
-    @Test
-    public void askAllExpectTwo() throws Exception {
-        ReactiveUserRepository reactiveUserRepository = new ReactiveUserRepository(Arrays.asList(User.BOB, User.ALICE));
-        Flux<User> flux = reactiveUserRepository.findAll();
-        StepVerifier verifier = requestAllExpectTwo(flux);
-        verifier.verify();
-    }
-
-    private StepVerifier requestAllExpectTwo(Flux<User> flux) {
-        return StepVerifier.create(flux).expectNextCount(2).expectComplete();
-    }
-
-    @Test
-    public void askOneByOne() throws Exception {
-        ReactiveUserRepository reactiveUserRepository = new ReactiveUserRepository(Arrays.asList(User.BOB, User.ALICE, User.CARL));
-        Flux<User> flux = reactiveUserRepository.findAll();
-        StepVerifier verifier = requestOneByOne(flux);
-        verifier.verify();
-    }
-
-    private StepVerifier requestOneByOne(Flux<User> flux) {
-        return StepVerifier.create(flux, 1)
-                .expectNext(User.BOB)
-                .thenRequest(1)
-                .expectNext(User.ALICE)
-                .thenCancel();
     }
 
     @Test
@@ -239,8 +165,6 @@ first of 2, get the fastest returned
 firstemitting
 
 no null in streams
-
-adapt flux to/from rxjava
 
 block() will block the current thread, you should be aware which threadpool you are. use in tests
 
