@@ -293,4 +293,15 @@ block() will block the current thread, you should be aware which threadpool you 
         return flux.publishOn(Schedulers.parallel()).doOnNext(blockingRepository::save).then();
     }
 
+    //TODO more:
+    /*
+    *  Backpressure: how to tune backpressure?
+    *  https://github.com/ReactiveX/RxJava/wiki/Backpressure
+    *
+·   *  Multithreading: messages order. use concatMap?
+    *  * http://stackoverflow.com/questions/36131991/rxjava-flatmap-vs-concatmap-why-is-ordering-the-same-on-subscription
+    *  * https://tomstechnicalblog.blogspot.it/2015/11/rxjava-achieving-parallelization.html
+    *  * http://fernandocejas.com/2015/01/11/rxjava-observable-tranformation-concatmap-vs-flatmap/
+    * */
+
 }
