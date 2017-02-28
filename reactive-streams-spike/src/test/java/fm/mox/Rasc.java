@@ -2,9 +2,11 @@ package fm.mox;
 
 
 import rx.Observable;
+import rx.Scheduler;
 import rx.schedulers.Schedulers;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -17,9 +19,10 @@ public class Rasc {
     private static int i = 0;
 
     public static void main(String[] args) {
+        Scheduler from = Schedulers.from(Executors.newFixedThreadPool(3));
         final List<String> res = Observable.create(onSubscribe)
                 .flatMap(strings -> Observable.just(strings)
-                        .subscribeOn(Schedulers.from(Executors.newFixedThreadPool(3)))
+                        .subscribeOn(from)
                         .map(Rasc::longCalculation)
                 )
                 .buffer(8)
