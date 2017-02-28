@@ -1,12 +1,12 @@
 package fm.mox;
 
 
-import rx.Observable;
-import rx.Scheduler;
-import rx.schedulers.Schedulers;
+import io.reactivex.Observable;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Scheduler;
+import io.reactivex.schedulers.Schedulers;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -28,14 +28,13 @@ public class Rasc {
                 .buffer(8)
                 .map(Rasc::calculateList)
                 .toList()
-                .toBlocking()
-                .single();
+                .blockingGet();
 
         System.out.println("strings = " + res);
     }
 
-    static final Observable.OnSubscribe<String> onSubscribe = subscriber -> {
-        subscriber.onStart();
+    private static final ObservableOnSubscribe<String> onSubscribe = observableEmitter -> {
+//        observableEmitter.onStart();
         IntStream.range(1, 20).forEach(i1 -> {
             try {
                 Thread.sleep(200);
@@ -43,9 +42,9 @@ public class Rasc {
                 e.printStackTrace();
             }
             log("Generating %s", i1);
-            subscriber.onNext("input-" + i1);
+            observableEmitter.onNext("input-" + i1);
         });
-        subscriber.onCompleted();
+        observableEmitter.onComplete();
     };
 
     private static String calculateList(List<String> s) {
@@ -64,7 +63,7 @@ public class Rasc {
         return s.toUpperCase();
     }
 
-    static void log(String s, Object... params) {
+    private static void log(String s, Object... params) {
         System.out.println(String.format("[%s] %s", Thread.currentThread().getName(), String.format(s, params)));
     }
 
