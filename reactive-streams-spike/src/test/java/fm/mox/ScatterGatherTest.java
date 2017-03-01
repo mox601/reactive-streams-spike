@@ -24,7 +24,7 @@ import reactor.core.scheduler.Schedulers;
 @Slf4j
 public class ScatterGatherTest {
 
-    @Testg
+    @Test
     public void test() throws Exception {
 
         Flux.just("red", "white", "blue")
