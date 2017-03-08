@@ -1,16 +1,18 @@
 package fm.mox;
 
-import lombok.extern.slf4j.Slf4j;
+import java.time.Duration;
+import java.time.LocalTime;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
-import java.time.LocalTime;
 
 /**
  * Created by matteo (dot) moci (at) gmail (dot) com
@@ -57,5 +59,20 @@ public class RetryTest {
         StepVerifier.create(flux)
                 .expectError(IllegalArgumentException.class)
                 .verify();
+    }
+
+    @Test
+    public void throttling() throws Exception {
+
+        Flux.interval(Duration.ofMillis(100))
+            .map(a -> System.nanoTime())
+//            .log()
+            .onBackpressureDrop()
+            .zipWith(Flux.interval(Duration.ofSeconds(1)))
+//            .log()
+            .subscribe(aLong -> log.info(aLong + ""));
+
+        Thread.sleep(10_000);
+
     }
 }
