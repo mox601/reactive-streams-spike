@@ -24,7 +24,6 @@ import reactor.util.function.Tuples;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Slf4j
-
 public class RetryTest {
 
     @Test
@@ -103,12 +102,34 @@ public class RetryTest {
                 return aLong;
             });
 
-        Observable<Long> everyHundredMillis = Observable.interval(1, TimeUnit.MILLISECONDS);
+        Observable<Long> everyMillis = Observable.interval(1, TimeUnit.MILLISECONDS);
 
-        everyHundredMillis
+        everyMillis
             .map(a -> System.nanoTime())
             .zipWith(everySecond, Tuples::of)
             .subscribe(aLong -> log.info(aLong + ""));
 
     }
+
+    @Test
+    public void fromA() throws Exception {
+
+        Observable<Long> everySecond = Observable.fromIterable(Arrays.asList(1L, 2L, 3L))
+            .map(aLong -> {
+                try {
+                    Thread.sleep(1_000L);
+                } catch (InterruptedException e) {
+                    //
+                }
+                return aLong;
+            });
+
+        Observable<Long> everyMillis = Observable.interval(1, TimeUnit.MILLISECONDS);
+
+        Observable<Long> longObservable = everyMillis
+            .zipWith(everySecond, (x, y) -> x);
+
+        longObservable.subscribe(aLong -> log.info(aLong + ""));
+    }
+
 }
