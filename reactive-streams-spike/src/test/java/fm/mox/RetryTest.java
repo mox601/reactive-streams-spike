@@ -126,8 +126,7 @@ public class RetryTest {
 
         Observable<Long> everyMillis = Observable.interval(1, TimeUnit.MILLISECONDS);
 
-        Observable<Long> longObservable = everyMillis
-            .zipWith(everySecond, (x, y) -> x);
+        Observable<Long> longObservable = everyMillis.zipWith(everySecond, (x, y) -> x);
 
         longObservable.subscribe(aLong -> log.info(aLong + ""));
     }
