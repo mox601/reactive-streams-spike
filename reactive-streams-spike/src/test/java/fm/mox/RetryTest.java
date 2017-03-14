@@ -2,18 +2,21 @@ package fm.mox;
 
 import java.time.Duration;
 import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import io.reactivex.Observable;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
+import reactor.util.function.Tuples;
 
 /**
  * Created by matteo (dot) moci (at) gmail (dot) com
@@ -65,19 +68,47 @@ public class RetryTest {
     @Test
     public void throttling() throws Exception {
 
-        Flux.interval(Duration.ofMillis(100))
+        Flux<Long> everySecond = Flux.fromIterable(Arrays.asList(1L, 2L, 3L))
+            .map(aLong -> {
+                try {
+                    Thread.sleep(1_000L);
+                } catch (InterruptedException e) {
+                    //
+                }
+                return aLong;
+            });
+
+        Flux<Long> everyHundredMillis = Flux.interval(Duration.ofMillis(10));
+
+        everyHundredMillis
             .map(a -> System.nanoTime())
-//            .log()
             .onBackpressureDrop()
-//            .onBackpressureBuffer(100, BufferOverflowStrategy.DROP_OLDEST)
-            .zipWith(Flux.interval(Duration.ofSeconds(1)))
-//            .log()
-            .subscribeOn(Schedulers.immediate())
+            .zipWith(everySecond)
             .subscribe(aLong -> log.info(aLong + ""));
 
         //http://tomstechnicalblog.blogspot.it/2016/02/rxjava-understanding-observeon-and.html
 
-        Thread.sleep(10_000);
+    }
+
+    @Test
+    public void throttlingRxJavaFluxTuples() throws Exception {
+
+        Observable<Long> everySecond = Observable.fromIterable(Arrays.asList(1L, 2L, 3L))
+            .map(aLong -> {
+                try {
+                    Thread.sleep(1_000L);
+                } catch (InterruptedException e) {
+                    //
+                }
+                return aLong;
+            });
+
+        Observable<Long> everyHundredMillis = Observable.interval(1, TimeUnit.MILLISECONDS);
+
+        everyHundredMillis
+            .map(a -> System.nanoTime())
+            .zipWith(everySecond, Tuples::of)
+            .subscribe(aLong -> log.info(aLong + ""));
 
     }
 }
