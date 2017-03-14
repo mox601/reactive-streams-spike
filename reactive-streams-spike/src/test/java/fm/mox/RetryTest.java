@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 
 /**
@@ -68,9 +69,13 @@ public class RetryTest {
             .map(a -> System.nanoTime())
 //            .log()
             .onBackpressureDrop()
+//            .onBackpressureBuffer(100, BufferOverflowStrategy.DROP_OLDEST)
             .zipWith(Flux.interval(Duration.ofSeconds(1)))
 //            .log()
+            .subscribeOn(Schedulers.immediate())
             .subscribe(aLong -> log.info(aLong + ""));
+
+        //http://tomstechnicalblog.blogspot.it/2016/02/rxjava-understanding-observeon-and.html
 
         Thread.sleep(10_000);
 
