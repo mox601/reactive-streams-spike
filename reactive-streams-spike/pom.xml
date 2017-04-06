@@ -25,7 +25,7 @@
 
         <guava.version>21.0</guava.version>
         <lombok.version>1.16.14</lombok.version>
-        <reactor.version>3.0.5.RELEASE</reactor.version>
+        <reactor.version>3.0.6.RELEASE</reactor.version>
         <rxjava.version>2.0.0</rxjava.version>
         <spring-boot-dependencies.version>1.5.1.RELEASE</spring-boot-dependencies.version>
         <spring-data-commons.version>1.13.0.RELEASE</spring-data-commons.version>

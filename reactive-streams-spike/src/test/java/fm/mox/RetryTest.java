@@ -4,7 +4,6 @@ import io.reactivex.Observable;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.reactivestreams.Subscription;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import reactor.core.Exceptions;
@@ -18,8 +17,6 @@ import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * Created by matteo (dot) moci (at) gmail (dot) com
@@ -58,7 +55,7 @@ public class RetryTest {
                                     if (index < 4) return index;
                                     else throw Exceptions.propagate(error);
                                 })
-                                .flatMap(index -> Mono.delayMillis(index * 100))
+                                .flatMap(index -> Mono.delay(Duration.ofMillis(index * 100)))
                                 .doOnNext(s -> log.info("retried at " + LocalTime.now()))
                         );
 
@@ -141,5 +138,4 @@ public class RetryTest {
         cdl.await();
         log.info("finishing");
     }
-
 }

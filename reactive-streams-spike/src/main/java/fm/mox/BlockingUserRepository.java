@@ -1,5 +1,6 @@
 package fm.mox;
 
+import java.io.UncheckedIOException;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
