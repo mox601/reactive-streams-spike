@@ -67,7 +67,7 @@ public class E09ComplexTest {
 //        Mono<String> stringMono = fromCache.otherwiseIfEmpty(single);
         Flux<String> concat = Flux.concat(fromCache, fromRepositoryWithSave);
 
-        fromCache.otherwiseIfEmpty(fromRepositoryWithSave);
+        fromCache.switchIfEmpty(fromRepositoryWithSave);
 
     }
 
@@ -92,7 +92,7 @@ public class E09ComplexTest {
         }
 
         private Mono<V> withDelay(Mono<V> map) {
-            return Mono.delay(Duration.ofMillis(this.delayInMs)).then(c -> map);
+            return Mono.delay(Duration.ofMillis(this.delayInMs)).flatMap(c -> map);
         }
     }
 

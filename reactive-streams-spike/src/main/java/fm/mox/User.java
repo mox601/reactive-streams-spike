@@ -13,6 +13,6 @@ public class User {
     public static final User CARL = new User("Carl", "Wilson");
     public static final User DAVE = new User("Dave", "Jackson");
 
-    private final String name;
-    private final String surname;
+    String name;
+    String surname;
 }

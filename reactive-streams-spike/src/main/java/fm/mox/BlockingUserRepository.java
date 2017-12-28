@@ -2,6 +2,7 @@ package fm.mox;
 
 import java.io.UncheckedIOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,18 +43,18 @@ public class BlockingUserRepository implements UserRepository {
     }
 
     @Override
-    public <S extends User> Iterable<S> save(Iterable<S> iterable) {
+    public <S extends User> Iterable<S> saveAll(Iterable<S> iterable) {
         throw new UnsupportedOperationException("not implemented yet");
     }
 
     @Override
-    public User findOne(String username) {
+    public Optional<User> findById(String username) {
         this.callCount++;
-        return reactiveRepository.findById(username).block();
+        return Optional.ofNullable(reactiveRepository.findById(username).block());
     }
 
     @Override
-    public boolean exists(String s) {
+    public boolean existsById(String s) {
         throw new UnsupportedOperationException("not implemented yet");
     }
 
@@ -64,7 +65,7 @@ public class BlockingUserRepository implements UserRepository {
     }
 
     @Override
-    public Iterable<User> findAll(Iterable<String> iterable) {
+    public Iterable<User> findAllById(Iterable<String> iterable) {
         throw new UnsupportedOperationException("not implemented yet");
     }
 
@@ -74,17 +75,17 @@ public class BlockingUserRepository implements UserRepository {
     }
 
     @Override
-    public void delete(String s) {
+    public void delete(User s) {
         throw new UnsupportedOperationException("not implemented yet");
     }
 
     @Override
-    public void delete(User user) {
+    public void deleteById(String id) {
         throw new UnsupportedOperationException("not implemented yet");
     }
 
     @Override
-    public void delete(Iterable<? extends User> iterable) {
+    public void deleteAll(Iterable<? extends User> iterable) {
         throw new UnsupportedOperationException("not implemented yet");
     }
 

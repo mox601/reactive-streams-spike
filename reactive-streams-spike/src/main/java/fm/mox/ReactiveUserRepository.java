@@ -68,7 +68,7 @@ public class ReactiveUserRepository implements ReactiveRepository<User, String> 
 
         return Mono.from(withDelay(Flux.from(pageablePublisher)).flatMap(pageable -> {
 
-            int fromIndex = pageable.getOffset();
+            long fromIndex = pageable.getOffset();
 
             int pageNumber = pageable.getPageNumber();
 
@@ -83,8 +83,8 @@ public class ReactiveUserRepository implements ReactiveRepository<User, String> 
             Mono<Page<User>> usersPage = Mono.empty();
 
             if (fromIndex < total) {
-                List<User> arrayList = this.users.subList(fromIndex, minToIndex);
-                Pageable aPageable = new PageRequest(pageNumber, pageSize);
+                List<User> arrayList = this.users.subList(Integer.parseInt(Long.toString(fromIndex)), minToIndex);
+                Pageable aPageable = PageRequest.of(pageNumber, pageSize);
                 Page<User> data = new PageImpl<>(arrayList, aPageable, total);
                 usersPage = Mono.just(data);
             }
@@ -97,7 +97,7 @@ public class ReactiveUserRepository implements ReactiveRepository<User, String> 
     private <T> Mono<T> withDelay(Mono<T> aMono) {
         return Mono
                 .delay(Duration.ofMillis(this.delayInMs))
-                .then(c -> aMono);
+                .flatMap(c -> aMono);
     }
 
     private <T> Flux<T> withDelay(Flux<T> userFlux) {

@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.1.RELEASE</version>
+        <version>1.5.9.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -25,10 +25,10 @@
 
         <guava.version>21.0</guava.version>
         <lombok.version>1.16.14</lombok.version>
-        <reactor.version>3.0.7.RELEASE</reactor.version>
-        <rxjava.version>2.0.0</rxjava.version>
-        <spring-boot-dependencies.version>1.5.1.RELEASE</spring-boot-dependencies.version>
-        <spring-data-commons.version>1.13.0.RELEASE</spring-data-commons.version>
+        <reactor.version>3.1.2.RELEASE</reactor.version>
+        <rxjava.version>2.1.8</rxjava.version>
+        <spring-boot-dependencies.version>1.5.9.RELEASE</spring-boot-dependencies.version>
+        <spring-data-commons.version>2.0.2.RELEASE</spring-data-commons.version>
     </properties>
 
     <dependencies>
@@ -56,16 +56,16 @@
         </dependency>
 
         <dependency>
-            <groupId>io.projectreactor.addons</groupId>
-            <artifactId>reactor-test</artifactId>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
             <version>${reactor.version}</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-core</artifactId>
+            <artifactId>reactor-test</artifactId>
             <version>${reactor.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
